@@ -23,8 +23,8 @@ resource "aws_security_group" "allow-http" {
 
   egress {
     cidr_blocks = ["0.0.0.0/0"]
-    from_port = 0
-    to_port = 0
+    from_port   = 0
+    to_port     = 0
     protocol    = "-1"
   }
 }
@@ -62,6 +62,16 @@ resource "aws_iam_policy" "EC2S3Policy" {
         "Effect" : "Allow",
         "Resource" : "*"
       },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:Get*",
+          "s3:List*"
+        ],
+        "Resource" : [
+          "arn:aws:s3:::aws-codedeploy-us-east-1/*",
+        ]
+      }
     ]
   })
 }
