@@ -19,11 +19,47 @@ resource "aws_iam_role" "codedeployService" {
   })
 }
 
+resource "aws_iam_policy" "CodeDeployPolicy" {
+  name = "CodeDeployPolicy"
+  policy = jsonencode({
+    Version : "2012-10-17"
+    Statement : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "autoscaling:*",
+          "codedeploy:*",
+          "ec2:*",
+          "lambda:*",
+          "elasticloadbalancing:*",
+          "iam:AddRoleToInstanceProfile",
+          "iam:CreateInstanceProfile",
+          "iam:CreateRole",
+          "iam:DeleteInstanceProfile",
+          "iam:DeleteRole",
+          "iam:DeleteRolePolicy",
+          "iam:GetInstanceProfile",
+          "iam:GetRole",
+          "iam:GetRolePolicy",
+          "iam:ListInstanceProfilesForRole",
+          "iam:ListRolePolicies",
+          "iam:ListRoles",
+          "iam:PassRole",
+          "iam:PutRolePolicy",
+          "iam:RemoveRoleFromInstanceProfile",
+          "s3:*"
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
+}
+
 # attach AWS managed policy called AWSCodeDeployRole
 # required for deployments which are to an EC2 compute platform
 resource "aws_iam_role_policy_attachment" "codedeployService" {
   role       = aws_iam_role.codedeployService.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
+  policy_arn = aws_iam_policy.CodeDeployPolicy.arn
 }
 
 resource "aws_codedeploy_app" "myWebApp" {
@@ -45,44 +81,10 @@ resource "aws_codedeploy_deployment_group" "myDeploymentGroup" {
   }
 }
 
-# resource "aws_codedeploy_deployment" "myDeployment" {
-#   application_name      = aws_codedeploy_app.name
-#   deployment_group_name = aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name
-#   revision {
-#     revision_type = "S3"
-
-#     s3_location {
-#       bucket      = "s3://my-source-bucket-76sdf700"
-#       key         = "webapp.zip"
-#       bundle_type = "zip"
-#     }
-#   }
-# }
-
-# resource "null_resource" "trigger_deployment" {
-#   provisioner "local-exec" {
-#     command = <<EOF
-#     aws deploy create-deployment \
-#         --application-name ${aws_codedeploy_app.myWebApp.name} \
-#         --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} \
-#         --s3-location bucket=my-source-bucket-76sdf700,key=webapp.zip,bundleType=zip
-# EOF
-#   }
-# }
-
 resource "null_resource" "trigger_deployment" {
   provisioner "local-exec" {
     command = <<EOF
-echo "Deploying application using AWS CLI..."
-echo "aws deploy create-deployment --application-name ${aws_codedeploy_app.myWebApp.name} --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} --s3-location bucket=my-source-bucket-76sdf700,key=webapp.zip,bundleType=zip"
-aws deploy create-deployment --application-name ${aws_codedeploy_app.myWebApp.name} --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} --s3-location bucket=my-source-bucket-76sdf700,key=webapp.zip,bundleType=zip
+      aws deploy create-deployment --application-name ${aws_codedeploy_app.myWebApp.name} --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} --s3-location bucket=my-source-bucket-76sdf700,bundleType=zip,key=webapp.zip
 EOF
-  }
-
-  triggers = {
-    app_name              = aws_codedeploy_app.myWebApp.name
-    deployment_group_name = aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name
-    s3_bucket             = "my-source-bucket-76sdf700"
-    s3_key                = "webapp.zip"
   }
 }

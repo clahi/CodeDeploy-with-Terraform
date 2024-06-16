@@ -27,3 +27,9 @@ resource "aws_s3_bucket_acl" "bucketAcl" {
     aws_s3_bucket_public_access_block.accessBlock
   ]
 }
+
+resource "aws_s3_bucket_object" "file_upload" {
+  bucket = aws_s3_bucket.mySourceBucket.id
+  key    = "webapp.zip"
+  source = "${path.module}/webapp.zip"
+}
