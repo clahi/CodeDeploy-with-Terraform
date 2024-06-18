@@ -84,7 +84,8 @@ resource "aws_codedeploy_deployment_group" "myDeploymentGroup" {
 resource "null_resource" "trigger_deployment" {
   provisioner "local-exec" {
     command = <<EOF
-      aws deploy create-deployment --application-name ${aws_codedeploy_app.myWebApp.name} --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} --s3-location bucket=my-source-bucket-76sdf700,bundleType=zip,key=webapp.zip
+      aws deploy create-deployment --application-name ${aws_codedeploy_app.myWebApp.name} --deployment-group-name ${aws_codedeploy_deployment_group.myDeploymentGroup.deployment_group_name} --s3-location bucket="my-source-bucket-76sdf700",bundleType=zip,key=webapp.zip
 EOF
   }
+  depends_on = [aws_s3_bucket.mySourceBucket]
 }

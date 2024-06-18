@@ -1,6 +1,8 @@
 #!/bin/bash
 
-sudo yum update
+cd /home/ec2-user
+sudo mkdir Amran
+sudo yum -y update
 
 sudo yum install ruby -y
 

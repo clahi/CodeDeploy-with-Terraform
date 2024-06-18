@@ -134,4 +134,6 @@ resource "aws_instance" "demo-instance2" {
   tags = {
     Name = "demo-instance"
   }
+
+  depends_on = [ aws_iam_instance_profile.EC2Profile ]
 }
